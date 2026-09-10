@@ -1,7 +1,9 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-const DATA_FILE = path.join(__dirname, "data.json");
+// DATA_DIR erlaubt es, den Datenordner auf ein Volume zu legen (z.B. in Docker),
+// damit die Liste Container-Neustarts uebersteht. Ohne DATA_DIR liegt sie neben index.js.
+const DATA_FILE = path.join(process.env.DATA_DIR || __dirname, "data.json");
 
 const EMPTY_STATE = { players: [], sessions: [] };
 

@@ -15,25 +15,43 @@ Beide können vom selben Server ausgeliefert werden (Express liefert `public/`
 gleich mit aus), oder getrennt: Frontend z.B. auf GitHub Pages, Backend auf einem
 eigenen Node-fähigen Server.
 
-## Backend deployen
+## Backend deployen (Docker, mit automatischem HTTPS)
+
+Voraussetzung: Docker + Docker Compose auf dem Server, und die Domain
+(`tischtennis.oxibuff.at`) zeigt per DNS-A-Record auf die Server-IP. Ports 80
+und 443 müssen von außen erreichbar sein (für die Let's-Encrypt-Zertifikate).
 
 ```bash
-cd server
-npm install
-PORT=3000 npm start
+git clone https://github.com/KarlFredenhagen/rangbestie.git
+cd rangbestie
+docker compose up -d --build
 ```
 
-Läuft dauerhaft am besten hinter einem Reverse Proxy mit HTTPS (z.B. nginx +
-certbot) und einem Prozess-Manager wie `pm2` oder einem systemd-Service, damit
-der Server Neustarts übersteht. HTTPS ist nötig, damit die PWA auf Handys
-installierbar ist.
+Das startet zwei Container:
 
-Falls das Frontend von einer anderen Adresse ausgeliefert wird (z.B. GitHub
-Pages), zusätzlich `CORS_ORIGIN` setzen, sonst blockt der Browser die Anfragen:
+- **`app`** – der Node-Server, speichert die Liste auf einem Docker-Volume (übersteht Neustarts/Updates).
+- **`caddy`** – Reverse Proxy, der automatisch ein Let's-Encrypt-Zertifikat für die Domain aus [`deploy/Caddyfile`](deploy/Caddyfile) holt und erneuert. Kein manuelles Certbot/Cron nötig.
+
+Domain oder CORS-Ursprung geändert? In [`docker-compose.yml`](docker-compose.yml)
+(`CORS_ORIGIN`) und [`deploy/Caddyfile`](deploy/Caddyfile) anpassen, dann:
 
 ```bash
-CORS_ORIGIN=https://<user>.github.io PORT=3000 npm start
+docker compose up -d --build
 ```
+
+Updates einspielen (z.B. nach `git pull`):
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+### Ohne Docker
+
+Geht auch klassisch mit `cd server && npm install && PORT=3000 npm start`,
+dann selbst hinter einen Reverse Proxy mit HTTPS stellen (z.B. nginx + certbot)
+und mit `pm2` oder einem systemd-Service am Laufen halten. `CORS_ORIGIN`
+entsprechend setzen, falls das Frontend von einer anderen Adresse kommt.
 
 ## Frontend konfigurieren
 
@@ -51,9 +69,9 @@ window.RANGBESTIE_CONFIG = {
 ## GitHub Pages
 
 Der Workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) published
-den Inhalt von `public/` automatisch bei jedem Push auf `main`. Einmalig in den
-Repo-Einstellungen unter **Settings → Pages → Source** auf **GitHub Actions**
-umstellen.
+den Inhalt von `public/` automatisch bei jedem Push auf `master`. Einmalig in
+den Repo-Einstellungen unter **Settings → Pages → Source** auf **GitHub
+Actions** umstellen.
 
 ## Elo-Details
 

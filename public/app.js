@@ -94,6 +94,40 @@ darkMedia.addEventListener("change", () => {
   if (getTheme() === "system") applyTheme();
 });
 
+// ---------- Antipp-Reihenfolge ----------
+
+const TAP_ORDER_KEY = "rb_tap_order";
+
+function getTapOrder() {
+  try {
+    const v = localStorage.getItem(TAP_ORDER_KEY);
+    return v === "reversed" ? "reversed" : "normal";
+  } catch (_) {
+    return "normal";
+  }
+}
+
+function setTapOrder(order) {
+  try {
+    localStorage.setItem(TAP_ORDER_KEY, order);
+  } catch (_) {}
+  applyTapOrderUI();
+}
+
+function applyTapOrderUI() {
+  const order = getTapOrder();
+  document.querySelectorAll("#tap-order-seg button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.tapOrder === order);
+  });
+  const hint = document.getElementById("tap-order-hint");
+  if (hint) {
+    hint.textContent =
+      order === "reversed"
+        ? "Wer beim Ringerl rausfliegt, tippt einfach gleich auf seinen Namen. Der Letzte, der übrig bleibt bzw. zuletzt tippt, ist der Sieger."
+        : "Antippen in Platzierungsreihenfolge: erst der Sieger, dann Platz 2, 3 usw.";
+  }
+}
+
 // ---------- K-Faktor ----------
 
 function getKFactor() {
@@ -117,6 +151,11 @@ function initSettingsTab() {
   document.querySelectorAll("#theme-seg button").forEach((btn) => {
     btn.addEventListener("click", () => setTheme(btn.dataset.theme));
   });
+
+  document.querySelectorAll("#tap-order-seg button").forEach((btn) => {
+    btn.addEventListener("click", () => setTapOrder(btn.dataset.tapOrder));
+  });
+  applyTapOrderUI();
 
   const kInput = document.getElementById("k-factor-input");
   kInput.value = getKFactor();
@@ -252,8 +291,15 @@ function renderParticipantPicker() {
     chip.addEventListener("click", () => {
       const id = chip.dataset.id;
       const idx = state.rankingOrder.indexOf(id);
-      if (idx === -1) state.rankingOrder.push(id);
-      else state.rankingOrder.splice(idx, 1);
+      if (idx === -1) {
+        // Normale Reihenfolge: der Reihe nach antippen, Sieger zuerst (ans Ende anhaengen).
+        // Umgekehrte Reihenfolge: wer rausfliegt tippt zuerst, rueckt also vorne rein und
+        // schiebt bereits Angetippte weiter nach hinten Richtung letzten Platz.
+        if (getTapOrder() === "reversed") state.rankingOrder.unshift(id);
+        else state.rankingOrder.push(id);
+      } else {
+        state.rankingOrder.splice(idx, 1);
+      }
       renderParticipantPicker();
       renderRankingList();
     });
