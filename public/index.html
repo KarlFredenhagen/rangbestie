@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Rangbestie</title>
-  <meta name="theme-color" content="#f7f4f3" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#121010" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" id="theme-color-meta" content="#121010" />
   <meta name="description" content="Elo-Rangliste fuer woechentliche Ringerl-Tischtennisrunden" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
@@ -84,15 +83,67 @@
         <p class="empty-hint">Lade Spieler…</p>
       </div>
     </section>
+
+    <section id="tab-settings" class="tab-panel">
+      <div class="panel-block" style="margin-top:6px">
+        <label>Design</label>
+        <div class="seg" id="theme-seg">
+          <button type="button" data-theme="system">System</button>
+          <button type="button" data-theme="light">Hell</button>
+          <button type="button" data-theme="dark">Dunkel</button>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <label>Elo-Einstellungen</label>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="tx">
+              <b>K-Faktor</b>
+              <small>Wie stark sich eine Runde auf die Elo auswirkt. Standard: 16.</small>
+            </div>
+            <input type="number" id="k-factor-input" min="4" max="64" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <label>Verbindung</label>
+        <div class="settings-card">
+          <div class="settings-row">
+            <span class="dot-status" id="conn-dot"></span>
+            <div class="tx">
+              <b>Backend</b>
+              <small id="conn-url"></small>
+            </div>
+            <button type="button" class="icon-btn" id="conn-test-btn">Testen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <label>App</label>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="tx">
+              <b>Zwischenspeicher aktualisieren</b>
+              <small>Hilft, wenn nach einem Update noch die alte Version angezeigt wird.</small>
+            </div>
+            <button type="button" class="icon-btn" id="clear-cache-btn">Leeren</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <nav class="tabs" id="tabs">
     <div class="tabs-inner">
       <div class="nav-pill" id="nav-pill"></div>
-      <button class="tab-btn active" data-tab="leaderboard"><span class="ico" data-ico="trophy" data-ico-size="21"></span>Rangliste</button>
-      <button class="tab-btn" data-tab="new-session"><span class="ico" data-ico="plus" data-ico-size="21"></span>Neue Runde</button>
-      <button class="tab-btn" data-tab="history"><span class="ico" data-ico="list" data-ico-size="21"></span>Verlauf</button>
-      <button class="tab-btn" data-tab="players"><span class="ico" data-ico="people" data-ico-size="21"></span>Spieler</button>
+      <button class="tab-btn active" data-tab="leaderboard"><span class="ico" data-ico="trophy" data-ico-size="20"></span>Rangliste</button>
+      <button class="tab-btn" data-tab="new-session"><span class="ico" data-ico="plus" data-ico-size="20"></span>Neue Runde</button>
+      <button class="tab-btn" data-tab="history"><span class="ico" data-ico="list" data-ico-size="20"></span>Verlauf</button>
+      <button class="tab-btn" data-tab="players"><span class="ico" data-ico="people" data-ico-size="20"></span>Spieler</button>
+      <button class="tab-btn" data-tab="settings"><span class="ico" data-ico="gear" data-ico-size="20"></span>Mehr</button>
     </div>
   </nav>
 

@@ -1,9 +1,10 @@
-const CACHE_NAME = "rangbestie-shell-v2";
+const CACHE_NAME = "rangbestie-shell-v3";
 const SHELL_FILES = [
   "./",
   "index.html",
   "styles.css",
   "app.js",
+  "config.js",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png",

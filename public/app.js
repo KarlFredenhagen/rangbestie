@@ -38,6 +38,7 @@ const ICONS = {
   plus: '<path d="M12 5.2v13.6M5.2 12h13.6"/>',
   list: '<path d="M8.4 6h12.2M8.4 12h12.2M8.4 18h12.2"/><path d="M3.6 6h.02M3.6 12h.02M3.6 18h.02"/>',
   people: '<circle cx="9" cy="8.4" r="3.2"/><path d="M3.6 20.2c0-3.4 2.4-5.6 5.4-5.6s5.4 2.2 5.4 5.6"/><circle cx="17.2" cy="9.4" r="2.4"/><path d="M15.4 14.8c2.4.2 4.2 2.1 4.2 5"/>',
+  gear: '<path d="M3.4 6.6h8.2M17.4 6.6h3.2M3.4 12h2.2M11.6 12h9M3.4 17.4h8.2M17.4 17.4h3.2"/><circle cx="14.5" cy="6.6" r="2.4"/><circle cx="8.6" cy="12" r="2.4"/><circle cx="14.5" cy="17.4" r="2.4"/>',
 };
 
 function ico(name, size) {
@@ -52,6 +53,110 @@ function paintIcons(root) {
   (root || document).querySelectorAll("[data-ico]").forEach((el) => {
     el.innerHTML = ico(el.dataset.ico, el.dataset.icoSize);
   });
+}
+
+// ---------- Theme ----------
+
+const THEME_KEY = "rb_theme";
+const K_FACTOR_KEY = "rb_k_factor";
+const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+function getTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) || "system";
+  } catch (_) {
+    return "system";
+  }
+}
+
+function setTheme(theme) {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch (_) {}
+  applyTheme();
+}
+
+function applyTheme() {
+  const theme = getTheme();
+  if (theme === "system") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
+
+  const resolvedDark = theme === "dark" || (theme === "system" && darkMedia.matches);
+  const meta = document.getElementById("theme-color-meta");
+  if (meta) meta.content = resolvedDark ? "#121010" : "#f7f4f3";
+
+  document.querySelectorAll("#theme-seg button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.theme === theme);
+  });
+}
+
+darkMedia.addEventListener("change", () => {
+  if (getTheme() === "system") applyTheme();
+});
+
+// ---------- K-Faktor ----------
+
+function getKFactor() {
+  try {
+    const v = parseInt(localStorage.getItem(K_FACTOR_KEY), 10);
+    return Number.isFinite(v) && v > 0 ? v : 16;
+  } catch (_) {
+    return 16;
+  }
+}
+
+function setKFactor(v) {
+  try {
+    localStorage.setItem(K_FACTOR_KEY, String(v));
+  } catch (_) {}
+}
+
+// ---------- Settings tab ----------
+
+function initSettingsTab() {
+  document.querySelectorAll("#theme-seg button").forEach((btn) => {
+    btn.addEventListener("click", () => setTheme(btn.dataset.theme));
+  });
+
+  const kInput = document.getElementById("k-factor-input");
+  kInput.value = getKFactor();
+  kInput.addEventListener("change", () => {
+    const v = parseInt(kInput.value, 10);
+    if (Number.isFinite(v) && v > 0) setKFactor(v);
+    kInput.value = getKFactor();
+  });
+
+  document.getElementById("conn-url").textContent = API;
+  document.getElementById("conn-test-btn").addEventListener("click", testConnection);
+
+  document.getElementById("clear-cache-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("clear-cache-btn");
+    btn.disabled = true;
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      location.reload();
+    } catch (_) {
+      btn.disabled = false;
+    }
+  });
+}
+
+async function testConnection() {
+  const dot = document.getElementById("conn-dot");
+  dot.className = "dot-status";
+  try {
+    await api("/players");
+    dot.classList.add("ok");
+  } catch (_) {
+    dot.classList.add("bad");
+  }
 }
 
 // ---------- Tabs ----------
@@ -74,6 +179,7 @@ function initTabs() {
       if (btn.dataset.tab === "history") renderHistory();
       if (btn.dataset.tab === "players") renderPlayersManage();
       if (btn.dataset.tab === "leaderboard") renderLeaderboard();
+      if (btn.dataset.tab === "settings") testConnection();
       moveNavPill();
     });
   });
@@ -235,7 +341,7 @@ async function submitSession() {
   try {
     const session = await api("/sessions", {
       method: "POST",
-      body: JSON.stringify({ date, ranking: state.rankingOrder }),
+      body: JSON.stringify({ date, ranking: state.rankingOrder, kFactor: getKFactor() }),
     });
     state.sessions.unshift(session);
     state.players = await api("/players");
@@ -430,10 +536,12 @@ function escapeHtml(str) {
 // ---------- Init ----------
 
 async function init() {
+  applyTheme();
   paintIcons();
   initTabs();
   initNewSessionTab();
   initPlayersTab();
+  initSettingsTab();
   moveNavPill();
 
   try {
