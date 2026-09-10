@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <title>Rangbestie</title>
+  <meta name="theme-color" content="#f7f4f3" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121010" media="(prefers-color-scheme: dark)" />
+  <meta name="description" content="Elo-Rangliste fuer woechentliche Ringerl-Tischtennisrunden" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Rangbestie" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="wrap" style="display:flex;align-items:center;gap:10px;width:100%">
+      <h1><span class="em">🏓</span> Rangbestie</h1>
+      <span id="connection-status" class="status" hidden></span>
+    </div>
+  </header>
+
+  <main id="app">
+    <section id="tab-leaderboard" class="tab-panel active">
+      <div id="leaderboard-list" class="card-list">
+        <p class="empty-hint">Lade Rangliste…</p>
+      </div>
+    </section>
+
+    <section id="tab-new-session" class="tab-panel">
+      <div class="panel-block" style="margin-top:6px">
+        <label for="session-date">Datum</label>
+        <input type="date" id="session-date" />
+      </div>
+
+      <div class="panel-block">
+        <div class="panel-block-header">
+          <span>Wer hat mitgespielt?</span>
+          <button id="reset-selection" class="link-btn" type="button">Zuruecksetzen</button>
+        </div>
+        <div id="participant-picker" class="chip-list"></div>
+      </div>
+
+      <div class="panel-block">
+        <div class="panel-block-header">
+          <span>Platzierung (der Reihe nach antippen)</span>
+        </div>
+        <ol id="ranking-list" class="ranking-list">
+          <li class="empty-hint">Waehle oben Teilnehmer aus</li>
+        </ol>
+      </div>
+
+      <button id="submit-session" class="primary-btn" type="button" disabled>Runde speichern</button>
+      <div id="session-feedback" class="feedback" hidden></div>
+
+      <div id="last-result" class="panel-block" hidden>
+        <div class="panel-block-header"><span>Letzte Runde</span></div>
+        <div id="last-result-list" class="card-list"></div>
+      </div>
+    </section>
+
+    <section id="tab-history" class="tab-panel">
+      <div id="history-list" class="history-list">
+        <p class="empty-hint">Lade Verlauf…</p>
+      </div>
+    </section>
+
+    <section id="tab-players" class="tab-panel">
+      <div class="panel-block" style="margin-top:6px">
+        <div class="panel-block-header"><span>Neuer Spieler</span></div>
+        <form id="add-player-form" class="inline-form">
+          <input type="text" id="new-player-name" placeholder="Name" required />
+          <button type="submit" class="primary-btn small">Hinzufuegen</button>
+        </form>
+        <div id="add-player-feedback" class="feedback" hidden></div>
+      </div>
+
+      <div id="players-manage-list" class="card-list">
+        <p class="empty-hint">Lade Spieler…</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs" id="tabs">
+    <div class="tabs-inner">
+      <div class="nav-pill" id="nav-pill"></div>
+      <button class="tab-btn active" data-tab="leaderboard"><span class="ico" data-ico="trophy" data-ico-size="21"></span>Rangliste</button>
+      <button class="tab-btn" data-tab="new-session"><span class="ico" data-ico="plus" data-ico-size="21"></span>Neue Runde</button>
+      <button class="tab-btn" data-tab="history"><span class="ico" data-ico="list" data-ico-size="21"></span>Verlauf</button>
+      <button class="tab-btn" data-tab="players"><span class="ico" data-ico="people" data-ico-size="21"></span>Spieler</button>
+    </div>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
