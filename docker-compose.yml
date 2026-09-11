@@ -24,6 +24,18 @@ services:
     depends_on:
       - app
 
+  # Meldet alle 5 Minuten die aktuelle oeffentliche IP an DuckDNS, damit
+  # <subdomain>.duckdns.org immer auf den richtigen Server zeigt (z.B. wenn
+  # dein Internetanbieter keine feste IP vergibt). tischtennis.oxibuff.at
+  # zeigt per CNAME auf diese DuckDNS-Domain.
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    restart: unless-stopped
+    environment:
+      TZ: "Europe/Vienna"
+      SUBDOMAINS: "${DUCKDNS_SUBDOMAIN}"
+      TOKEN: "${DUCKDNS_TOKEN}"
+
 volumes:
   rangbestie-data:
   caddy-data:

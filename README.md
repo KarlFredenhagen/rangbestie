@@ -17,20 +17,38 @@ eigenen Node-fähigen Server.
 
 ## Backend deployen (Docker, mit automatischem HTTPS)
 
-Voraussetzung: Docker + Docker Compose auf dem Server, und die Domain
-(`tischtennis.oxibuff.at`) zeigt per DNS-A-Record auf die Server-IP. Ports 80
-und 443 müssen von außen erreichbar sein (für die Let's-Encrypt-Zertifikate).
+Voraussetzung: Docker + Docker Compose auf dem Server, Portweiterleitung 80+443
+im Router auf den Server, und die Domain (`tischtennis.oxibuff.at`) zeigt auf
+die Server-IP.
+
+### Dynamische IP (keine feste IP vom Provider)? DuckDNS einrichten
+
+1. Auf [duckdns.org](https://www.duckdns.org) einloggen (z.B. mit GitHub) und
+   eine Subdomain registrieren, z.B. `tischtennis-rangbestie` →
+   `tischtennis-rangbestie.duckdns.org`. Den Token oben auf der Seite kopieren.
+2. Beim DNS-Anbieter von `oxibuff.at` einen **CNAME** anlegen:
+   `tischtennis` → `tischtennis-rangbestie.duckdns.org`
+3. `.env.example` zu `.env` kopieren und mit Subdomain + Token befüllen:
+   ```bash
+   cp .env.example .env
+   ```
+4. Der `duckdns`-Container in [`docker-compose.yml`](docker-compose.yml) meldet
+   danach automatisch alle 5 Minuten die aktuelle IP – kein Cronjob nötig.
+
+### Starten
 
 ```bash
 git clone https://github.com/KarlFredenhagen/rangbestie.git
 cd rangbestie
+cp .env.example .env   # nur noetig falls DuckDNS genutzt wird, siehe oben
 docker compose up -d --build
 ```
 
-Das startet zwei Container:
+Das startet drei Container:
 
 - **`app`** – der Node-Server, speichert die Liste auf einem Docker-Volume (übersteht Neustarts/Updates).
 - **`caddy`** – Reverse Proxy, der automatisch ein Let's-Encrypt-Zertifikat für die Domain aus [`deploy/Caddyfile`](deploy/Caddyfile) holt und erneuert. Kein manuelles Certbot/Cron nötig.
+- **`duckdns`** – hält bei dynamischer IP die DuckDNS-Subdomain aktuell (nur relevant, falls du DuckDNS nutzt).
 
 Domain oder CORS-Ursprung geändert? In [`docker-compose.yml`](docker-compose.yml)
 (`CORS_ORIGIN`) und [`deploy/Caddyfile`](deploy/Caddyfile) anpassen, dann:
